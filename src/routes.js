@@ -1,9 +1,9 @@
-import { Router } from 'express';
+const express = require('express');
 
-import HelloWorld from './app/controllers/HelloWorldController';
+const routes = express.Router();
 
-const routes = new Router();
+routes.get('/', (req, res) => {
+  return res.json({ hello: "world" });
+});
 
-routes.post('/', HelloWorld.store);
-
-export default routes;
+module.exports = routes;
