@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const authConfig = require('../../config/auth.json');
 const crypto = require('crypto');
+const mailer = require('../../modules/mailer');
 
 const generateToken = (params = {}) => {
   return jwt.sign(params, authConfig.secret, {
@@ -16,11 +17,11 @@ module.exports = {
     const user = await User.findOne({ where: { email } });
 
     if (!user)
-      return res.status(404).json({ error: 'Usuário não encontrado!' });
+      return res.status(404).send({ error: 'Usuário não encontrado!' });
 
     const isValidPassword = bcrypt.compareSync(password, user.password);
     if (!isValidPassword)
-      return res.status(401).json({ error: 'Senha incorreta!' });
+      return res.status(401).send({ error: 'Senha incorreta!' });
 
     return res.send({ user, token: generateToken({ id: user.id }) });
   },
@@ -31,10 +32,10 @@ module.exports = {
 
     if (!user)
       return res.status(404).json({ error: 'Usuário não encontrado!' });
-    else{
-      user.password = password
-      user.save()
-      user.push()
+    else {
+      const hash = bcrypt.hashSync(password, 10);
+      user.password = hash;
+      user.save();
     }
   },
 
@@ -50,15 +51,29 @@ module.exports = {
 
       const now = new Date();
       now.setHours(now.getHours() + 1);
-      console.log(cryptoToken, now);
 
-      await User.findByIdAndUpdate(user.id, {
-        $set: {
-          passwordResetToken: cryptoToken,
-          passwordResetExpires: now,
+      user.passwordResetToken = cryptoToken;
+      user.passwordResetExpires = now;
+      user.save();
+
+      mailer.sendMail(
+        {
+          to: email,
+          from: 'hitallopacheco@hotmail.com',
+          html:
+            `<p> Você esqueceu sua senha? Aqui está seu código de recuperação: ${cryptoToken}</p>`,
         },
-      });
+        err => {
+          if (err)
+            return res
+              .status(400)
+              .send({ error: 'Não foi possivel enviar o email' });
+
+          return res.send();
+        }
+      );
     } catch (err) {
+      console.log(err);
       res
         .status(400)
         .send({ error: 'Erro na alteração de senha, tente novamente' });
