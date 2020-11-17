@@ -6,10 +6,10 @@ const projectRoutes = require('./routes/projectRoutes')
 require('./database');
 
 const app = express();
+app.use(cors());
 
 app.use(express.json());
 app.use('/app', projectRoutes)
 app.use('/user', userRoutes);
-app.use(cors());
 
 app.listen(3333);

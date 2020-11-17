@@ -16,16 +16,13 @@ module.exports = {
       },
       password: {
         type: Sequelize.STRING,
-        select: false,
         allowNull: false,
       },
       passwordResetToken: {
         type: Sequelize.STRING,
-        select: false,
       },
       passwordResetExpires: {
         type: Sequelize.DATE,
-        select: false,
       },
       created_at: {
         type: Sequelize.DATE,

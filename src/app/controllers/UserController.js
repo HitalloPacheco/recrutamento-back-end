@@ -26,34 +26,68 @@ module.exports = {
   },
 
   async ChangePassword(req, res) {
-    const { email } = req.body;
+    const { email, password } = req.body;
+    const user = await User.findOne({ where: { email } });
+
+    if (!user)
+      return res.status(404).json({ error: 'Usuário não encontrado!' });
+    else{
+      user.password = password
+      user.save()
+      user.push()
+    }
   },
 
   async ForgotPassword(req, res) {
     const { email } = req.body;
 
     try {
-      const user = await User.findOne({ email });
+      const user = await User.findOne({ where: { email } });
 
-      if (!user)
-      return res.status(400).send({ error: 'User not found' });
+      if (!user) return res.status(400).send({ error: 'User not found' });
 
-      const token = crypto.randomBytes(20).toString('hex');
+      const cryptoToken = crypto.randomBytes(20).toString('hex');
 
       const now = new Date();
       now.setHours(now.getHours() + 1);
+      console.log(cryptoToken, now);
 
       await User.findByIdAndUpdate(user.id, {
-        '$set': {
-          passwordResetToken: token,
+        $set: {
+          passwordResetToken: cryptoToken,
           passwordResetExpires: now,
         },
       });
-      console.log(token, now);
     } catch (err) {
       res
         .status(400)
         .send({ error: 'Erro na alteração de senha, tente novamente' });
+    }
+  },
+
+  async createValid(req, res) {
+    const { email } = req.body;
+    const user = await User.findOne({ where: { email } });
+
+    if (user) {
+      return res.status(404).send('Usuário já existe!');
+    }
+    if (!user) {
+      return res.send(false);
+    } else {
+      res.send('ok');
+    }
+  },
+
+  async Valid(req, res) {
+    const { email } = req.body;
+    const user = await User.findOne({ where: { email } });
+
+    if (user) {
+      res.send('ok');
+    }
+    if (!user) {
+      return res.send(false);
     }
   },
 
