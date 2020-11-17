@@ -5,8 +5,10 @@ const userRouter = express.Router();
 
 userRouter.post('/create', UserController.Store);
 
-userRouter.get('/auth', UserController.Auth);
+userRouter.post('/auth', UserController.Auth);
 
 userRouter.put('/changepassword', UserController.ChangePassword);
+
+userRouter.post('/forgot_password', UserController.ForgotPassword);
 
 module.exports = userRouter;
