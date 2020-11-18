@@ -18,11 +18,15 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      passwordResetToken: {
+      reset_token: {
         type: Sequelize.STRING,
+        allowNull: true,
+        onUpdate: 'CASCADE',
       },
-      passwordResetExpires: {
+      token_expires: {
         type: Sequelize.DATE,
+        allowNull: true,
+        onUpdate: 'CASCADE',
       },
       created_at: {
         type: Sequelize.DATE,

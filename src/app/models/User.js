@@ -5,6 +5,8 @@ class User extends Model {
     super.init({
       email: DataTypes.STRING,
       password: DataTypes.STRING,
+      reset_token: DataTypes.STRING,
+      token_expires: DataTypes.DATE,
     }, {
       sequelize
     })

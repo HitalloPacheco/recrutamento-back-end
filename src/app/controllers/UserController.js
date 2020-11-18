@@ -27,16 +27,34 @@ module.exports = {
   },
 
   async ChangePassword(req, res) {
-    const { email, password } = req.body;
-    const user = await User.findOne({ where: { email } });
+    const { email, token, password } = req.body;
 
-    if (!user)
-      return res.status(404).json({ error: 'Usuário não encontrado!' });
-    else {
+    try {
+      const user = await User.findOne({ where: { email } });
+
+      if (!user)
+        return res.status(400).send({ error: 'Usuário não encontrado!' });
+
+      if (token !== cryptoToken)
+        return res.status(400).send({ error: 'Token inválido' });
+
+      const now = new Date();
+
+      if (now > _now)
+        return res
+          .status(400)
+          .send({ error: 'Token expirado, gere um novo token!' });
+
       const hash = bcrypt.hashSync(password, 10);
       user.password = hash;
-      user.save();
+
+      await user.save();
+    } catch {
+      res.status(400).send({
+        error: 'Não foi possível resetar sua senha, tente novamente!',
+      });
     }
+    res.send();
   },
 
   async ForgotPassword(req, res) {
@@ -52,16 +70,16 @@ module.exports = {
       const now = new Date();
       now.setHours(now.getHours() + 1);
 
-      user.passwordResetToken = cryptoToken;
-      user.passwordResetExpires = now;
-      user.save();
+      user.reset_token = cryptoToken;
+      user.token_expires = now;
+
+      await user.save();
 
       mailer.sendMail(
         {
           to: email,
           from: 'hitallopacheco@hotmail.com',
-          html:
-            `<p> Você esqueceu sua senha? Aqui está seu código de recuperação: ${cryptoToken}</p>`,
+          html: `<p>Você esqueceu sua senha? Aqui está seu código de recuperação: ${cryptoToken}</p>`,
         },
         err => {
           if (err)
