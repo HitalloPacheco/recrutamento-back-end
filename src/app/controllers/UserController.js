@@ -17,7 +17,7 @@ module.exports = {
     const user = await User.findOne({ where: { email } });
 
     if (!user)
-      return res.status(404).send({ error: 'Usuário não encontrado!' });
+      return res.status(404).json({ error: 'Usuário não encontrado!' });
 
     const isValidPassword = bcrypt.compareSync(password, user.password);
     if (!isValidPassword)
@@ -107,7 +107,7 @@ module.exports = {
       const user = await User.findOne({ where: { email } });
 
       if (user)
-        return res.status(400).send({ error: 'Usuário já cadastrado!' });
+        return res.status(400).json({ error: 'Usuário já cadastrado!' });
 
       const cryptoToken = crypto.randomBytes(20).toString('hex');
 
