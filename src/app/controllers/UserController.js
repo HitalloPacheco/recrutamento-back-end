@@ -35,12 +35,12 @@ module.exports = {
       if (!user)
         return res.status(400).send({ error: 'Usuário não encontrado!' });
 
-      if (token !== cryptoToken)
+      if (token !== user.reset_token)
         return res.status(400).send({ error: 'Token inválido' });
 
       const now = new Date();
 
-      if (now > _now)
+      if (now > user.token_expires)
         return res
           .status(400)
           .send({ error: 'Token expirado, gere um novo token!' });
@@ -49,12 +49,14 @@ module.exports = {
       user.password = hash;
 
       await user.save();
-    } catch {
+      res.send();
+
+    } catch (err){
+      console.log(err)
       res.status(400).send({
         error: 'Não foi possível resetar sua senha, tente novamente!',
       });
     }
-    res.send();
   },
 
   async ForgotPassword(req, res) {
