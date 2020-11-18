@@ -3,8 +3,7 @@ const UserController = require('../app/controllers/UserController');
 
 const userRouter = express.Router();
 
-userRouter.post('/createvalid', UserController.createValid)
-userRouter.post('/valid', UserController.Valid)
+userRouter.post('/verifyuser', UserController.verifyUser)
 
 userRouter.post('/create', UserController.Store);
 

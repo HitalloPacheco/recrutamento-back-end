@@ -50,9 +50,8 @@ module.exports = {
 
       await user.save();
       res.send();
-
-    } catch (err){
-      console.log(err)
+    } catch (err) {
+      console.log(err);
       res.status(400).send({
         error: 'Não foi possível resetar sua senha, tente novamente!',
       });
@@ -65,7 +64,8 @@ module.exports = {
     try {
       const user = await User.findOne({ where: { email } });
 
-      if (!user) return res.status(400).send({ error: 'Usuário não encontrado!' });
+      if (!user)
+        return res.status(400).send({ error: 'Usuário não encontrado!' });
 
       const cryptoToken = crypto.randomBytes(20).toString('hex');
 
@@ -106,17 +106,13 @@ module.exports = {
     try {
       const user = await User.findOne({ where: { email } });
 
-      if (user) return res.status(400).send({ error: 'Usuário já cadastrado!' });
+      if (user)
+        return res.status(400).send({ error: 'Usuário já cadastrado!' });
 
       const cryptoToken = crypto.randomBytes(20).toString('hex');
 
       const now = new Date();
       now.setHours(now.getHours() + 1);
-
-      user.reset_token = cryptoToken;
-      user.token_expires = now;
-
-      await user.save();
 
       mailer.sendMail(
         {
@@ -129,10 +125,9 @@ module.exports = {
             return res
               .status(400)
               .send({ error: 'Não foi possivel enviar o email' });
-
-          return res.send();
         }
       );
+      return res.json({ cryptoToken, now });
     } catch (err) {
       console.log(err);
       res
@@ -140,7 +135,6 @@ module.exports = {
         .send({ error: 'Erro na alteração de senha, tente novamente' });
     }
   },
-
 
   async Store(req, res) {
     const { email, password } = req.body;
