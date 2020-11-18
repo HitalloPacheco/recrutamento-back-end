@@ -65,7 +65,7 @@ module.exports = {
     try {
       const user = await User.findOne({ where: { email } });
 
-      if (!user) return res.status(400).send({ error: 'User not found' });
+      if (!user) return res.status(400).send({ error: 'Usuário não encontrado!' });
 
       const cryptoToken = crypto.randomBytes(20).toString('hex');
 
@@ -100,31 +100,47 @@ module.exports = {
     }
   },
 
-  async createValid(req, res) {
+  async verifyUser(req, res) {
     const { email } = req.body;
-    const user = await User.findOne({ where: { email } });
 
-    if (user) {
-      return res.status(404).send('Usuário já existe!');
-    }
-    if (!user) {
-      return res.send(false);
-    } else {
-      res.send('ok');
+    try {
+      const user = await User.findOne({ where: { email } });
+
+      if (user) return res.status(400).send({ error: 'Usuário já cadastrado!' });
+
+      const cryptoToken = crypto.randomBytes(20).toString('hex');
+
+      const now = new Date();
+      now.setHours(now.getHours() + 1);
+
+      user.reset_token = cryptoToken;
+      user.token_expires = now;
+
+      await user.save();
+
+      mailer.sendMail(
+        {
+          to: email,
+          from: 'hitallopacheco@hotmail.com',
+          html: `<p>Você esqueceu sua senha? Aqui está seu código de recuperação: ${cryptoToken}</p>`,
+        },
+        err => {
+          if (err)
+            return res
+              .status(400)
+              .send({ error: 'Não foi possivel enviar o email' });
+
+          return res.send();
+        }
+      );
+    } catch (err) {
+      console.log(err);
+      res
+        .status(400)
+        .send({ error: 'Erro na alteração de senha, tente novamente' });
     }
   },
 
-  async Valid(req, res) {
-    const { email } = req.body;
-    const user = await User.findOne({ where: { email } });
-
-    if (user) {
-      res.send('ok');
-    }
-    if (!user) {
-      return res.send(false);
-    }
-  },
 
   async Store(req, res) {
     const { email, password } = req.body;
